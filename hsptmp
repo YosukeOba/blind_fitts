@@ -42,6 +42,8 @@ target = 0,0
 dim start,2
 start = 0,0
 
+lastTime=timeGetTime()
+
 *main
 	if(countBlock <= blockCounter){
 		notesel data
@@ -62,8 +64,12 @@ start = 0,0
 	mes "Block = "+blockCounter
 	pos 0,30
 	mes "Count = "+taskCounter
+	fps = 1000.0/(timeGetTime() - lastTime+1)
+	pos 0,60
+	mes "fps = "+fps
 
 	redraw 1
+	lastTime=timeGetTime()
 	await 1
 	goto *main
 
