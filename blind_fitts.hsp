@@ -11,19 +11,19 @@ failureMusicFile = "failure.wav"
 mci "open \""+successMusicFile+"\" alias success"
 mci "open \""+failureMusicFile+"\" alias failure"
 
-participant = 1
+participant = 7
 B=0
 
 isStart = 0
 startTime = 0
 
 dim As,2
-As = 300, 500
+As = 300, 700
 
 dim Ws,3
-Ws = 30, 55, 75
+Ws = 15, 45, 75
 
-countBlock = 1
+countBlock = 10
 
 dim tasks,length(As)*length(Ws)
 gosub *taskShuffle
@@ -47,7 +47,7 @@ lastTime=timeGetTime()
 *main
 	if(countBlock <= blockCounter){
 		notesel data
-		notesave ""+participant+".txt"
+		notesave ""+participant+","+B+".txt"
 		end
 	}
 	redraw 0
@@ -79,10 +79,8 @@ lastTime=timeGetTime()
 	} else: if(isStart == -1){
 		if(target(0)<=mousex && mousex<=target(0)+W){
 			error = 0
-			mci "play success from 0"
 		} else {
 			error = 1
-			mci "play failure from 0"
 		}
 		gosub *save
 	}
@@ -103,6 +101,11 @@ lastTime=timeGetTime()
 
 	notesel data
 	noteadd ""+participant+","+A+","+W+","+B+","+tempTime+","+error+","+blockCounter+","+taskCounter
+	if(error == 0){
+		mci "play success from 0"
+	} else: if(error == 1){
+		mci "play failure from 0"
+	}
 
 	taskCounter++
 	if (length(tasks) <= taskCounter){
