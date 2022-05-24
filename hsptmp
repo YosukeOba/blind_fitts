@@ -1,0 +1,146 @@
+#uselib "winmm"
+#cfunc timeGetTime "timeGetTime"
+#define WM_MOUSEMOVE	$00000200
+#include "user32.as"
+#include "hspmath.as"
+
+screen 0,ginfo(20),ginfo(21),256,0,0
+
+successMusicFile = "success.wav"
+failureMusicFile = "failure.wav"
+mci "open \""+successMusicFile+"\" alias success"
+mci "open \""+failureMusicFile+"\" alias failure"
+
+participant = 1
+B=0
+
+isStart = 0
+startTime = 0
+
+dim As,2
+As = 300, 500
+
+dim Ws,3
+Ws = 30, 55, 75
+
+countBlock = 1
+
+dim tasks,length(As)*length(Ws)
+gosub *taskShuffle
+
+taskCounter=0
+blockCounter=0
+
+A=0
+W=0
+
+error=0
+
+dim target,2
+target = 0,0
+
+dim start,2
+start = 0,0
+
+*main
+	if(countBlock <= blockCounter){
+		notesel data
+		notesave ""+participant+".txt"
+		end
+	}
+	redraw 0
+	color 175,175,175:boxf
+
+	onclick gosub *click
+
+	gosub *term
+
+	gosub *drawTargets
+
+	color 0,0,0
+	pos 0,0
+	mes "Block = "+blockCounter
+	pos 0,30
+	mes "Count = "+taskCounter
+
+	redraw 1
+	await 1
+	goto *main
+
+*click
+	if(isStart == 0 && start(0)<=mousex && mousex<=start(0)+W){
+		gosub *startT
+	} else: if(isStart == -1){
+		if(target(0)<=mousex && mousex<=target(0)+W){
+			error = 0
+			mci "play success from 0"
+		} else {
+			error = 1
+			mci "play failure from 0"
+		}
+		gosub *save
+	}
+	return
+
+*startT
+	isStart = -1
+	startTime = timeGetTime()
+	if(B==1){
+		mouse -1
+	}
+	return
+
+*save
+	isStart = 0
+	mouse
+	tempTime = timeGetTime()-startTime
+
+	notesel data
+	noteadd ""+participant+","+A+","+W+","+B+","+tempTime+","+error+","+blockCounter+","+taskCounter
+
+	taskCounter++
+	if (length(tasks) <= taskCounter){
+		blockCounter++
+		taskCounter=0
+		gosub *taskShuffle
+	}
+	
+	return
+	
+*term
+	e = tasks(taskCounter)
+	A = As(e\length(As))
+	W = Ws((e/length(As))\length(Ws))
+
+	target(0) = ginfo(20)/2 + A/2 - W/2
+	start(0) = ginfo(20)/2 - A/2 - W/2
+
+	return
+
+*drawTargets
+	if(isStart == 0){
+	if(start(0)<=mousex && mousex<=start(0)+W){
+		color 255,255,0
+	} else {
+		color 255,0,0
+	}
+	boxf start(0),0,start(0)+W,ginfo(21)
+	}
+
+	
+	if(target(0)<=mousex && mousex<=target(0)+W){
+		color 255,255,0
+	} else {
+		color 0,255,0
+	}
+	boxf target(0),0,target(0)+W,ginfo(21)
+	return
+
+*taskShuffle
+	randomize
+	repeat length(tasks)
+		r=rnd(cnt+1)
+		tasks(cnt)=tasks(r)
+		tasks(r)=cnt
+	loop
+	return
